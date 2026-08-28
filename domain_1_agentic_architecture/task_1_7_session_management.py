@@ -14,7 +14,11 @@ Run: python -m domain_1_agentic_architecture.task_1_7_session_management
 
 import asyncio
 
+import shared.env  # noqa: F401  - loads .env for the claude CLI subprocess
+
 from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
+
+MAX_BUDGET_USD = 1.0
 
 READ_ONLY = ["Read", "Grep", "Glob"]
 
@@ -25,7 +29,10 @@ async def run(prompt, **option_kwargs):
     result, session_id = None, None
     async for message in query(
         prompt=prompt,
-        options=ClaudeAgentOptions(allowed_tools=READ_ONLY, **option_kwargs),
+        options=ClaudeAgentOptions(allowed_tools=READ_ONLY,
+            model="haiku",
+            max_budget_usd=MAX_BUDGET_USD,
+            **option_kwargs),
     ):
         if isinstance(message, ResultMessage):
             session_id = message.session_id
@@ -48,6 +55,20 @@ async def main():
         resume=session_id,
     )
     print("followup:", followup)
+
+    # RESUME AFTER A FILE CHANGE: naming exactly what changed, and where, lets
+    # the resumed session re-analyze only the affected part instead of
+    # re-reading the whole file. The alternative - a vague "the file changed,
+    # look again" - forces full re-exploration because the agent has no way to
+    # know what's still valid from its earlier read.
+    targeted, _ = await run(
+        "Since your last analysis, shared/tools.py changed: MAX_EXPONENT in "
+        "_checked_pow was raised from 4096 to 8192 (around line 71). Re-analyze "
+        "only whether that change affects the DoS protection you described "
+        "earlier - you do not need to re-read the rest of the file.",
+        resume=session_id,
+    )
+    print("targeted re-analysis:", targeted)
 
     # FORK: two strategies from one shared baseline, compared without either
     # polluting the other. The fork gets a NEW id; the original is untouched, so

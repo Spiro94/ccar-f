@@ -63,6 +63,24 @@ WEB_SEARCH_TOOL = {
 # driven by model output — an injection sink the moment any untrusted text
 # reaches the prompt. Instead: parse to an AST and walk it, permitting only
 # whitelisted node types. Anything outside this table raises.
+# Python ints are arbitrary-precision, so operator.pow is unbounded work:
+# 9999**9999999, or a tower like 2**2**2**2**2, burns CPU and memory until the
+# process dies. The loop dispatches tools synchronously, so that hangs the whole
+# agent, and a try/except cannot help - it only runs once the damage is done.
+# The size of an integer power is predictable, so bound it BEFORE computing.
+MAX_RESULT_BITS = 4096
+MAX_EXPONENT = 4096
+
+
+def _checked_pow(base, exponent):
+    if abs(exponent) > MAX_EXPONENT:
+        raise ValueError("exponent too large (limit " + str(MAX_EXPONENT) + ")")
+    if isinstance(base, int) and isinstance(exponent, int) and exponent > 0:
+        if base.bit_length() * exponent > MAX_RESULT_BITS:
+            raise ValueError("result too large (limit " + str(MAX_RESULT_BITS) + " bits)")
+    return operator.pow(base, exponent)
+
+
 _OPERATORS = {
     ast.Add: operator.add,
     ast.Sub: operator.sub,
@@ -70,7 +88,7 @@ _OPERATORS = {
     ast.Div: operator.truediv,
     ast.FloorDiv: operator.floordiv,
     ast.Mod: operator.mod,
-    ast.Pow: operator.pow,
+    ast.Pow: _checked_pow,
     ast.USub: operator.neg,
     ast.UAdd: operator.pos,
 }
@@ -83,7 +101,9 @@ def _evaluate(node):
     # boundary — an unrecognised node is refused rather than interpreted.
     if isinstance(node, ast.Expression):
         return _evaluate(node.body)
-    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+    # type() not isinstance(): bool subclasses int, so isinstance would accept
+    # True/False and quietly evaluate them as 1/0.
+    if isinstance(node, ast.Constant) and type(node.value) in (int, float):
         return node.value
     if isinstance(node, ast.BinOp) and type(node.op) in _OPERATORS:
         return _OPERATORS[type(node.op)](_evaluate(node.left), _evaluate(node.right))
@@ -94,7 +114,13 @@ def _evaluate(node):
     raise ValueError("unsupported expression: " + ast.dump(node))
 
 
+MAX_EXPRESSION_LENGTH = 500
+
+
 def calculator(expression):
+    if len(expression) > MAX_EXPRESSION_LENGTH:
+        raise ValueError("expression too long (limit "
+                         + str(MAX_EXPRESSION_LENGTH) + " characters)")
     # Returns a string because tool_result content must be text — there is no
     # typed return path back to the model.
     return str(_evaluate(ast.parse(expression, mode="eval")))

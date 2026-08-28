@@ -12,9 +12,13 @@ Run: python -m domain_1_agentic_architecture.task_1_5_agent_sdk_hooks
 """
 
 import asyncio
+
+import shared.env  # noqa: F401  - loads .env for the claude CLI subprocess
 from datetime import datetime, timezone
 
 from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions, HookMatcher
+
+MAX_BUDGET_USD = 1.0
 
 REFUND_LIMIT = 500
 
@@ -91,6 +95,8 @@ async def main():
             "PostToolUse": [HookMatcher(matcher="^mcp__", hooks=[normalise_tool_output])],
         },
         allowed_tools=["Read", "Grep", "Glob"],
+        model="haiku",
+        max_budget_usd=MAX_BUDGET_USD,
     )
 
     async with ClaudeSDKClient(options=options) as client:

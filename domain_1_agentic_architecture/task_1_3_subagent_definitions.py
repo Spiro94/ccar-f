@@ -9,7 +9,11 @@ Run: python -m domain_1_agentic_architecture.task_1_3_subagent_definitions
 
 import asyncio
 
+import shared.env  # noqa: F401  - loads .env for the claude CLI subprocess
+
 from claude_agent_sdk import query, ClaudeAgentOptions, AgentDefinition
+
+MAX_BUDGET_USD = 1.0
 
 AGENTS = {
     "security-reviewer": AgentDefinition(
@@ -23,7 +27,7 @@ AGENTS = {
         # session entirely - no permission prompt, no error. This one physically
         # cannot write, so "do not modify" is enforced, not merely requested.
         tools=["Read", "Grep", "Glob"],
-        model="sonnet",
+        model="haiku",
     ),
     "test-runner": AgentDefinition(
         description="Runs test suites and analyses failures. Use for test "
@@ -46,6 +50,8 @@ async def main():
         options=ClaudeAgentOptions(
             allowed_tools=["Read", "Grep", "Glob", "Bash", "Agent", "Task"],
             agents=AGENTS,
+            model="haiku",
+            max_budget_usd=MAX_BUDGET_USD,
         ),
     ):
         if hasattr(message, "result"):

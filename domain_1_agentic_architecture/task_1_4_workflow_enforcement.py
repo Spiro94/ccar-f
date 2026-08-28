@@ -59,13 +59,18 @@ ESCALATE_TOOL = {
         "properties": {
             "customer_id": {"type": "string", "description": "Customer ID"},
             "root_cause": {"type": "string", "description": "What actually went wrong"},
+            "refund_amount": {"type": "number", "description": "Dollar amount at stake, 0 if none"},
             "attempted": {"type": "string", "description": "Paths already tried"},
             "recommendation": {"type": "string", "description": "Recommended action"},
         },
         # The operator has NO access to the transcript, so the full handoff
         # package is required, not optional. A bare "customer is upset" hand-off
-        # makes the human restart the investigation from zero.
-        "required": ["customer_id", "root_cause", "attempted", "recommendation"],
+        # makes the human restart the investigation from zero. refund_amount is
+        # named explicitly in the exam objective's handoff package alongside
+        # customer ID, root cause and recommended action - a human triaging a
+        # queue of escalations needs the dollar figure to prioritize without
+        # opening each case.
+        "required": ["customer_id", "root_cause", "refund_amount", "attempted", "recommendation"],
     },
 }
 
@@ -110,10 +115,11 @@ def process_refund(order_id, amount):
     return json.dumps({"refunded": amount, "order_id": order_id})
 
 
-def escalate_to_human(customer_id, root_cause, attempted, recommendation):
+def escalate_to_human(customer_id, root_cause, refund_amount, attempted, recommendation):
     print("\n--- ESCALATION ---")
     print("customer:", customer_id)
     print("root cause:", root_cause)
+    print("refund amount:", refund_amount)
     print("attempted:", attempted)
     print("recommendation:", recommendation)
     print("--- END ---\n")
@@ -145,7 +151,7 @@ messages = [{
 
 for turn in range(MAX_TURNS):
     message = client.messages.create(
-        model="claude-sonnet-5",
+        model="claude-haiku-4-5",
         max_tokens=1024,
         system=SYSTEM_PROMPT,
         messages=messages,

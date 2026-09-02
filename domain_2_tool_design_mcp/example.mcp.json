@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "catalog": {
+      "command": "python3",
+      "args": ["domain_2_tool_design_mcp/mcp_servers/catalog_server.py"]
+    },
+    "team-database": {
+      "command": "npx",
+      "args": ["-y", "@bytebase/dbhub", "--dsn", "${DATABASE_URL}"]
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_TOKEN}"
+      }
+    }
+  }
+}

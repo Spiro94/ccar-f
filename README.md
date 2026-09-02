@@ -3,13 +3,16 @@
 Working code for the five domains of the Claude Certified Architect -
 Foundations exam. One directory per domain, one file per task statement.
 
+Domain order and weights are from the official *Claude Certified Architect -
+Foundations Exam Guide*.
+
 | Domain | Weight | Directory |
 |---|---|---|
 | 1. Agentic Architecture & Orchestration | 27% | `domain_1_agentic_architecture/` |
-| 2. Claude Code Configuration & Workflows | - | `domain_2_claude_code_configuration/` |
-| 3. Prompt Engineering & Structured Output | - | `domain_3_prompt_engineering/` |
-| 4. Tool Design & MCP Integration | - | `domain_4_tool_design_mcp/` |
-| 5. Context Management & Reliability | - | `domain_5_context_management/` |
+| 2. Tool Design & MCP Integration | 18% | `domain_2_tool_design_mcp/` |
+| 3. Claude Code Configuration & Workflows | 20% | `domain_3_claude_code_configuration/` |
+| 4. Prompt Engineering & Structured Output | 20% | `domain_4_prompt_engineering/` |
+| 5. Context Management & Reliability | 15% | `domain_5_context_management/` |
 
 `shared/` holds the pieces every domain reuses: the Anthropic client and the
 calculator / stub-search tool definitions with their executors.

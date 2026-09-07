@@ -1,0 +1,7 @@
+{
+  "name": "acme-api",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  }
+}

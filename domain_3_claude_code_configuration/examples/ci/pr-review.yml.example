@@ -1,0 +1,48 @@
+# Example only - deliberately NOT under .github/workflows/, so pushing this
+# repo to GitHub never silently activates it as real CI. Demonstrates the
+# exam's named skills for Task 3.6, not a workflow meant to actually run.
+
+name: claude-pr-review
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # -p is mandatory: without it this step hangs waiting for interactive
+      # input that will never come (Question 10's exact failure mode).
+      # --output-format json + --json-schema: machine-parseable findings this
+      # job can post as inline PR comments, not prose to grep.
+      #
+      # Two things this call does NOT do, by design:
+      #   1. Resume the session that generated the diff - review runs as a
+      #      fresh `claude -p` invocation with no memory of writing the code,
+      #      per session context isolation.
+      #   2. Re-flag findings already posted on a prior run - PRIOR_FINDINGS
+      #      is injected into the prompt so re-runs after new commits report
+      #      only what's new or still unaddressed, avoiding duplicate comments.
+      - name: Review changed files
+        env:
+          PRIOR_FINDINGS: ${{ steps.prior-findings.outputs.json || '[]' }}
+        run: |
+          claude -p "Review the diff for this PR against main. Existing test
+          files are in test/ - do not suggest tests that duplicate scenarios
+          already covered there. Findings already reported in a prior run:
+          $PRIOR_FINDINGS - report only NEW or still-unaddressed issues,
+          never re-flag something already posted." \
+            --output-format json \
+            --json-schema '{"type":"object","properties":{"findings":{"type":"array","items":{"type":"object","properties":{"file":{"type":"string"},"line":{"type":"integer"},"severity":{"type":"string","enum":["low","medium","high"]},"description":{"type":"string"}},"required":["file","line","severity","description"]}}},"required":["findings"]}' \
+            > review-findings.json
+
+      - name: Post findings as PR comments
+        run: |
+          # Parse review-findings.json and call the GitHub API to post each
+          # finding as an inline comment - omitted here, this step is about
+          # the claude invocation above, not the GitHub API client.
+          echo "would post $(jq '.findings | length' review-findings.json) findings"

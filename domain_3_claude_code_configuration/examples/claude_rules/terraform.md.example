@@ -1,0 +1,10 @@
+---
+paths:
+  - "terraform/**/*"
+---
+
+# Terraform conventions
+
+- Every resource block needs a `description` on its variables.
+- Run `terraform fmt` before committing - do not hand-format .tf files.
+- State changes always go through a plan review; never `terraform apply -auto-approve`.

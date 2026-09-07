@@ -1,0 +1,16 @@
+---
+paths:
+  - "**/*.test.tsx"
+  - "**/*.test.ts"
+---
+
+# Test file conventions
+
+Applies regardless of which directory the test file lives in - test files in
+this codebase sit next to the code they test (Button.test.tsx beside
+Button.tsx), so a subdirectory CLAUDE.md can't target them all: it would need
+to be duplicated into every directory containing a component. A glob-pattern
+rule matches by file type, not location.
+
+- Use `describe`/`it`, not `test()`.
+- Mock at the network boundary (MSW), never mock the module under test.

@@ -1,0 +1,17 @@
+---
+name: deep-research
+description: Research a topic thoroughly in an isolated context, without polluting the main conversation with every file it reads
+argument-hint: "[topic]"
+context: fork
+agent: Explore
+allowed-tools: Read Grep Glob
+---
+
+Research $ARGUMENTS thoroughly:
+
+1. Find relevant files using Glob and Grep.
+2. Read and analyze what you find.
+3. Summarize findings with specific file references.
+
+Report only the summary - the coordinator that invoked you never sees which
+files you opened along the way, only this final report.

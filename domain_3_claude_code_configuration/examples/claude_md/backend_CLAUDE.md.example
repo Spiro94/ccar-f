@@ -1,0 +1,10 @@
+# src/api (subdirectory CLAUDE.md)
+
+Loaded only when Claude reads a file under src/api/ - not at session launch,
+unlike the root file. This is the mechanism a "new team member isn't getting
+instructions" complaint usually traces back to: they're editing a file whose
+directory-level CLAUDE.md was never loaded, or their own instructions live in
+~/.claude/CLAUDE.md (user-level - never shared with teammates via version
+control at all, by design).
+
+@../docs/api-standards.md.example

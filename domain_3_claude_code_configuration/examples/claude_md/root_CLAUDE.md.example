@@ -1,0 +1,13 @@
+# acme-api
+
+Build: `npm run build`
+Test: `npm test` (must pass before committing)
+
+## Conventions
+- API handlers live in `src/api/handlers/`
+- Use 2-space indentation
+
+See @package.json.example for available npm commands.
+
+# Additional Instructions
+- git workflow @docs/git-instructions.md.example

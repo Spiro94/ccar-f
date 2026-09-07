@@ -1,0 +1,9 @@
+# API standards
+
+Imported by backend_CLAUDE.md.example - demonstrates @import pulling in a
+standards file scoped to one package, rather than bloating the root CLAUDE.md
+with rules only the API team needs.
+
+- Every endpoint validates input before touching the database.
+- Error responses use the shared {errorCategory, isRetryable, message} shape
+  from domain_2_tool_design_mcp/task_2_2_structured_error_responses.py.

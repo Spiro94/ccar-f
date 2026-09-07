@@ -1,0 +1,7 @@
+Review the current diff for:
+1. Security issues (injection, auth bypass, secrets in code)
+2. Missing error handling
+3. Test coverage for the changed logic
+
+Report findings as a bulleted list, most severe first. Do not fix anything -
+report only.

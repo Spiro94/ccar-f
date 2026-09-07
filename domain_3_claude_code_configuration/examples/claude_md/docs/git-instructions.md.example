@@ -1,0 +1,4 @@
+# Git workflow
+
+- Branch from `main`, never commit directly to it.
+- Squash-merge PRs; keep commit messages under 72 chars on the summary line.
